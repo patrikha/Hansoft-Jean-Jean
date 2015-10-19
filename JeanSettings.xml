@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Configuration>
 
   <!--
@@ -19,512 +19,141 @@
     <Assembly Path="ShadowBacklogBehavior.dll" />
     <Assembly Path="IntermediateRankBehavior.dll" />
     <Assembly Path="CloneProjectBehavior.dll" />
+    <Assembly Path="SAFeExtension.dll" />
+    <Assembly Path="TypeColorBehavior.dll" />
     <Assembly Path="DerivedColumnExpressionExample.dll" />
   </LoadAssemblies>
 
-  <!--
-  Configuration - Connecting to a Hansoft Database
-  =================================================
-  
-  
-  The connection parameters are common for all behaviors, hence Jean for Hansoft can currently only operate on one database at the time,
+  <!-- NOTE:
+       This is Schneider Electrics settings file for Jean for Hansoft that is applicable when used with the SAFe kit for Hansoft.
+       See http://github.com/Hansoft/Hansoft-SAFeKit
 
-  The connection is specified in the Connection element.
-    
-  Parameters
-  ''''''''''
-  HansoftServerHost         : IP or DNS name of the Hansoft server
-  HansoftServerPort         : The listen port of the Hansoft server
-  HansoftSdkUser            : Name of the Hansoft SDK User account
-  HansoftSdkUserPassword    : Password of the Hansoft SDK User account
-  HansoftDatabase           : Name of the Hansoft Database to get data from
-  EventWindow               : The max number of milliseconds that events will be buffered/queued for. This is used to avoid excessive server load when
-                              you have behaviors that potentially have a significant impact on the server load.
-  Example
-  '''''''
-  Connect to the database MyDB on the Hansoft server running on the local machine on port 50256 as the SDK user sdk with password sdk. Use event buffering upto 1 second.
-  <Connection HansoftServerHost="localhost" HansoftServerPort="50256" HansoftDatabase="MyDB" HansoftSdkUser="sdk" HansoftSdkUserPassword="sdk" EventWindow="1000"/>
-  -->
+       For a description of the generic behaviors and their parameters that are used below, please refer to the
+       standard JeanSettings.xml file for Jean. See: http://github.com/Hansoft/Hansoft-Jean-Jean -->
 
-  <!-- 
-  In the Behaviors section you specify what behaviors that you want to apply. You can specify multiple behaviors of the same or different types as you like.
-  NOTE: Whenever you add additional behaviors it is important that you monitor server load carefully for some time including peak usage to avoid adding
-  to many performance demanding behaviors that risk to be detrimental to server performance with an impact to human users.
-  -->
   <Behaviors>
-    <!--
-    Copy Behavior
-    =============
-    This is useful if you have linked items and you want to propagate data to items that have links. The linked items can
-    potentially be in separate projects. The data is updated automatically as the data on the source items are changed.
-    
-    TargetProject             : The Hansoft project containing the items to which data should be copied
-    TargetView                : Specifies the View to which data should be copied (Agile, Scheduled, Bugs, Backlog)
-    TargetFind                : A Find query that specifies the items to which data should be copied.
-    SourceProject             : The Hansoft project containing the items from which data should be copied
-    SourceView                : Specifies the View from which data should be copied (Agile, Scheduled, Bugs, Backlog)
-    SourceFind                : A Find query that specifies the items from which data should be copied.
-    
-    For each column that should be copied you then specify one ColumnMapping element. The ColumnMapping should contain one Source element
-    and one Target Element that each should contain one subelement. The Subeelement can either be of type CustomColumn where the name of
-    the column is specified with the Name attribute, or one of the following to indicate one of the builtin columns in Hansoft:
-    * Risk
-    * Priority
-    * EstimatedDays
-    * Category
-    * Points
-    * Status
-    * Confidence
-    * Hyperlink
-    * Name
-    * WorkRemaining
-    
-    Generally speaking it is safest to map columns of the same type to one another. But as long as it possible to convert a value from one
-    type or another it is possible to map one column type to another type. For example, all column types can be mapped to a Text type column.
-    
-    Example
-    '''''''
-    Synchronize selected columns of linked items from the product backlog in the  project Program to the product backlog in the project Portfolio.
 
-    <CopyBehavior TargetProject="Portfolio" TargetView="Backlog" TargetFind="" SourceProject="Program" SourceView="Backlog" SourceFind="">
-      <ColumnMapping>
-        <Source>
-          <CustomColumn Name="Aggregated Status"/>
-        </Source>
-        <Target>
-          <Status />
-        </Target>
-      </ColumnMapping>
-      <ColumnMapping>
-        <Source>
-          <CustomColumn Name="Aggregated Estimated days"/>
-        </Source>
-        <Target>
-          <EstimatedDays />
-        </Target>
-      </ColumnMapping>
-      <ColumnMapping>
-        <Source>
-          <CustomColumn Name="Days completed"/>
-        </Source>
-        <Target>
-          <CustomColumn Name="Days completed"/>
-        </Target>
-      </ColumnMapping>
-      <ColumnMapping>
-        <Source>
-          <CustomColumn Name="Product Owner"/>
-        </Source>
-        <Target>
-          <CustomColumn Name="Product Owner"/>
-        </Target>
-      </ColumnMapping>
-      <ColumnMapping>
-        <Source>
-          <CustomColumn Name="Estimated Release Date"/>
-        </Source>
-        <Target>
-          <CustomColumn Name="Estimated Release Date"/>
-        </Target>
-      </ColumnMapping>
-    </CopyBehavior>
-
-
-    Derive Behavior
-    ===============
-    The derive behavior is used to have a column value that is derived automatically based on the values of other columns and items.
-    
-    How the derived value should be calculated is specified by a C# expression in the Expression attribute of the configuration settings below.
-    
-    Simple expressions can be specified directly. If you have more complex expressions it is reccommended that you do the calculation in a separate
-    DLL that is loaded in the LoadAssemblies section of JeanSettings.xml (see above).
-
-    You can always refer to the current task with current_task. Note that this will be a task object provided by the ObjectWrapper. You can return
-    any value in the expression but for the behavior to work the following constraints apply:
-    
-    Parameters
-    ''''''''''
-    HansoftProject      : A regular expression (see: http://msdn.microsoft.com/en-us/library/az24scfc(v=vs.110).aspx) specifying the Hansoft
-                          projects for which the behavior should be applied.
-    InvertedMatch       : If not specified, or if the value is any other than 'Yes', then the behavior will be applied for all projects
-                          that match the regular expression specified with the HansoftProject parameter. If the value is 'Yes', then the
-                          behavior will be applied for all projects except the ones that match the regular expression specified with the
-                          HansoftProject parameter
-    View                : Specifies the View in which the items are found (Agile, Scheduled, Bugs, Backlog)
-    Find                : A Find query that specifies the items for which column values should be derived.
-    
-    For each column value that should have its value derived you specify one element. The element name is either the name of
-    the column (as listed below) or CustomColumn. For each column you then specify how the value should be derived in the Expression
-    attribute of the corresponding element (see also the examples below).
-    
-    Builtin columns
-    '''''''''''''''
-    The following builtin columns are currently supported:
-    * Risk
-    * Priority
-    * EstimatedDays
-    * Category
-    * Points
-    * Status
-    * Confidence
-    * Hyperlink
-    * Name
-    * WorkRemaining
-    
-    For numeric and plain text columns you specify the value as it is displayed in the Hansoft client. This is applies for the following columns:
-    * EstimatedDays - The expression should return a floating point value or a value that can be converted to floating point.
-    * Points - The expression should return an integer value or a value that can be converted to an integer.
-    * Hyperlink - Any type of expression is allowed as its ToString() method will be applied.
-    * Name - Any type of expression is allowed as its ToString() method will be applied.
-    * WorkRemaining - The expression should return a floating point value or a value that can be converted to floating point.
-    
-    For enumerables you should specify the ordinal number corresponding to the enum value. The expression should return an integer or a value
-    that can be convereted to an integer. This applies for the following columns:
-    * Risk (Low Risk = 2, Medium Risk = 3, High Risk = 4)
-    * Priority (Very Low Priority = 2, Low Priority = 3, Medium Priority = 4, High Priority = 5, Very High Priority = 6)
-    * Category (Requirement = 2, Enhancement = 3, Technology upgrade = 4, Bug(A) = 5, Bug(B) = 6, Bug(C) = 7, Bug(D) = 8)
-    * Status (Not done = 2, In progress = 3, Completed = 4, Blocked = 5, To be deleted = 6)
-    * Confidence (Low Confidence = 2, Medium Confidence = 3, High Confidence = 4)
-    
-    Custom columns
-    ''''''''''''''
-    For columns of the following types you specify the value as it is displayed in the Hansoft client:
-    * Text
-    * Hyperlink
-    * Droplist single choice
-    * Droplist multiple choice. The differen items are separated by semicolon (;),
-    * Number
-    * Number with Decimals
-    * Time spent
-    * People
-    
-    Other columns
-    * When deriving values for For multiline text columns you insert line breaks with \n and backslashes with \\.
-    * Values for Date columns should be specified in the Short Date Format as specified in the Windows Region and Language settings.
-    * Values for DateTime columns should be specified in the Long Time Format as specified in the Windows Region and Language settings. Note
-      however that the actual time value should be specified as UTC, not the local time.
-    
-    NOTE: To specify a string constant in the expression you will need to replace double quoutes with  "&quot;" to make sure that the XML attribute
-    value specifying the expression is parsed correctly.
-    
-    NOTE: Floating point values always use period (.) as the decimal symbol, regardless of the Region settings in Windows. I.e., you should specify
-    values as they appear in Hansoft.
-    
-    Example
-    '''''''
-    Uncomment the following section to derive column values in the product backlog of the project MyProject as follows:
-    1. Set the Estimated days column to the same value as the Points column.
-    2. Set the custom column Child count to the number of children of the current task    
-    3. Set the the custom column Aggregated Status to the aggregated status value of the current task.
-    4. Set the the custom column Aggregated Estimated days to the aggregated estimated days value of the current task.
-    5. Set the the custom column Days completed to the sum of the estimated days for all completed items that are children of the current task.
-    6. Set the custom column completion count to the result of the static function CompletionCount defined in the CompletionCounter class which is a custom
-    class defined in an assembly that is loaded in the <LoadAssemblies> section.
-
-    <DeriveBehavior HansoftProject="^MyProject\z" View="Backlog" Find="">
-      <EstimatedDays Expression="current_task.Points" />
-      <CustomColumn Name="Child count" Expression="current_task.Children.Count" />
-      <CustomColumn Name="Aggregated Status" Expression="current_task.AggregatedStatus" />
-      <CustomColumn Name="Aggregated Estimated days" Expression="current_task.AggregatedEstimatedDays" />
-      <CustomColumn Name="Days completed" Expression="current_task.DeepLeaves.FindAll(task => ((Task)task).Status.Equals(EHPMTaskStatus.Completed)).Sum(task => ((Task)task).EstimatedDays)" />
-      <CustomColumn Name="Completion count" Expression="Hansoft.Jean.Behavior.DeriveBehavior.Expressions.CompletionCounter.CompletionCount(current_task)" />
-    </DeriveBehavior>
-
-
-    Track Last Status Change Behavior
-    =================================
-    This behavior useful if you want to track when product backlog items last changed their status. This is for example useful to create reports that filter out items
-    that have entered a certain status in a certain timespan. This behavior should be used in combination with the Derive behavior as described below.
-
-    Parameters
-    ''''''''''
-    HansoftProject            A regular expression (see: http://msdn.microsoft.com/en-us/library/az24scfc(v=vs.110).aspx) specifying the Hansoft
-                              projects for which the behavior should be applied.
-    InvertedMatch             If not specified, or if the value is any other than 'Yes', then the behavior will be applied for all projects
-                              that match the regular expression specified with the HansoftProject parameter. If the value is 'Yes', then the
-                              behavior will be applied for all projects except the ones that match the regular expression specified with the
-                              HansoftProject parameter
-    View                      Specifies the View for which status changes should be tracked (Agile, Scheduled, Backlog)
-    TrackingColumn            Specifies the Hansoft column to keep the time stamp for the last status change, this should be a readonly custom column of type Date and time.
-    TrackedColumn             Specified the column to track. This should normally be set up so that this is a read-only custom column of type text that is set to the
-                              aggregated status value by applying the DeriveBehavior (see example below).
-
-    Example
-    '''''''
-    Add tracking of the last status change in the column "Status last changed" in the product backlog for all projects with a name that starts with "Portfolio - ", or starts with "Program - ".
-    <DeriveBehavior HansoftProject="(^Portfolio - |^Program - )" View="Backlog" Find="">
-      <CustomColumn Name="Aggregated status" Expression="current_task.AggregatedStatus" />
-    </DeriveBehavior>
-    <TrackLastStatusChangeBehavior HansoftProject="MyProject" View="Backlog" TrackingColumn="Status last changed" TrackedColumn="Aggregated status"/>
- 
-
-    Assign Release Risk Behavior
-    ============================
-    This behavior useful if you want to track the risk that product backlog items will miss their assigned release date. The behavior automatically updates a column in the product backlog
-    that defines the release risk for an item. Items are categorized as "Done", "Low risk", "Medium risk", or "High risk". The items that are targeted to a particular release are calculated
-    in the same way as when release burndowns are calculated in the Hansoft client. Items are considered as part of a release if:
-    a) The item is committed to a sprint and that sprint is tagged to the release.
-       or
-    b) The item is not committed to a sprint but it is tagged in the product backlog to the release.
-    
-    The release risk is based on the predicted velocity (same as if you hover over a future date in the release burndown in Hansoft) and the number of remaining working days until the
-    release date. This gives the expected number of points or ideal days that can be completed from the current time up to the release date. This is the "Expected" value. The release risk value is then calculated using
-    a  provided "Factor" that is between 0 an 1 as follows:
-    Done         - Items that have the status Completed.
-    Low risk     - Items that fit within LowRiskLimit/100*Expected
-    Medium risk  - Items that fit within HighRiskLimit/100*Expected
-    High risk    - Any remaining items that are not completed and don't fit within HighRiskLimit/100*Expected.
-    
-    Parameters
-    ''''''''''
-    HansoftProject          : A regular expression (see: http://msdn.microsoft.com/en-us/library/az24scfc(v=vs.110).aspx) specifying the Hansoft
-                              projects for which the behavior should be applied.
-    InvertedMatch           : If not specified, or if the value is any other than 'Yes', then the behavior will be applied for all projects
-                              that match the regular expression specified with the HansoftProject parameter. If the value is 'Yes', then the
-                              behavior will be applied for all projects except the ones that match the regular expression specified with the
-                              HansoftProject parameter
-    TrackingColumn          : Specifies the Hansoft column that tracks the release risk. This should be a readonly custom column of type Drop list single choice. There should be four values defined
-                              representing done, low risk, medium risk and high risk items respectively.
-    RiskValues              : Defines the name of the different risk levels in the Hansoft client. These values must exactly match the values provided in the column defintion in Hansoft.
-                              The items are provided as a comma-separated list in the order "<done-value>, <low-risk-value>, <medium-risk-value>, <high-risk-value>".
-    Find                    : A find query that should return the releases for which backlog items should be assigned a release risk.
-    PointsOrDays            : Defines whether release risk is calculated based on Points or Ideal days as the estimate for backlog items. Allowed values are "Days" or "Points".
-    LowRiskLimit            : Integer value for the break-off between low/medium risk as percent of the Expected value.
-    HighRiskLimit           : Integer value for the break-off between medium/high risk as percent of the Expected value.
-    ElevateBlockedItems     : If set to Yes, then items that are in the status Blocked will be elevated to High risk regardless of it they fit within the risk limits or not.
-    ConsiderRiskColumn      : If set to Yes, then items will be elevated if to the value in the builtin Risk column if that is higher than the risk calculated based on the expected progress towards the release.
-    
-    Example
-    '''''''
-    Add tracking of the release risk in the column "Release risk" in for backlogitems that are tagged to releases found in the subproject Features in the schedule
-    part of all projects with a name that starts with "Program - ". Use the estimated days burndown and values for calculating risk and elevate any blocked items to
-    High risk. Items that fit withing 80% of the expected progress will be set to low risk. Items that fit withing 110% of the expected progress will be set to medium risk.
-    
-    <AssignReleaseRiskBehavior HansoftProject="^Program - " InvertedMatch="Yes" TrackingColumn="Release risk" RiskValues="Done, Low risk, Medium risk, High risk" Find="Itemtype=Release AND Immediateparentsubproject:Item(Features)" PointsOrDays="Days" LowRiskLimit="80" HighRiskLimit="110" ElevatedBlockedItems="Yes" />
-
-
-    Default Value Behavior
-    ======================
-    This behavior is used to set a column to a default value whenever an item is created. Depending on the type of the
-    column the value should be specified as follows:
-    
-    Parameters
-    ''''''''''
-    HansoftProject            The Hansoft project containing the items for which default values should be set.
-    View                      Specifies the View for which the default value is applicable (Agile, Scheduled, Bugs, Backlog)
-    
-    For each column value that should have a default you specify one element. The element name is either the name of
-    the column (as listed below) or CustomColumn. For each column you then specify how the value in the DefaultValue
-    attribute of the corresponding element (see also the examples below).    
-    
-    Builtin columns
-    '''''''''''''''
-    The following builtin columns are currently supported:
-    * Risk
-    * Priority
-    * EstimatedDays
-    * Category
-    * Points
-    * Status
-    * Confidence
-    * Hyperlink
-    * Name
-    * WorkRemaining
-    
-    For numeric and plain text columns you specify the value as it is displayed in the Hansoft client. This is applies for the following columns:
-    * EstimatedDays
-    * Points
-    * Hyperlink
-    * Name
-    * WorkRemaining
-    
-    For enumerables you should specify the ordinal number corresponding to the enum value. This applies for the following columns:
-    * Risk (Low Risk = 2, Medium Risk = 3, High Risk = 4)
-    * Priority (Very Low Priority = 2, Low Priority = 3, Medium Priority = 4, High Priority = 5, Very High Priority = 6)
-    * Category (Requirement = 2, Enhancement = 3, Technology upgrade = 4, Bug(A) = 5, Bug(B) = 6, Bug(C) = 7, Bug(D) = 8)
-    * Status (Not done = 2, In progress = 3, Completed = 4, Blocked = 5, To be deleted = 6)
-    * Confidence (Low Confidence = 2, Medium Confidence = 3, High Confidence = 4)
-    
-    Custom columns
-    ''''''''''''''
-    For columns of the following types you specify the value as it is displayed in the Hansoft client:
-    * Text
-    * Hyperlink
-    * Droplist single choice
-    * Droplist multiple choice. The differen items are separated by semicolon (;),
-    * Number
-    * Number with Decimals
-    * Time spent
-    * People
-    
-    Other columns
-    * When specifying default values for For multiline text columns you insert line breaks with \n and backslashes with \\.
-    * Default values for Date columns should be specified in the Short Date Format as specified in the Windows Region and Language settings.
-    * Default values for Date Time columns should be specified in the Long Time Format as specified in the Windows Region and Language settings. Note
-      however that the actual time value should be specified as UTC, not the local time.
-      
-    Example
-    '''''''
-    Set a default template for the name of new items created in the product backlog of the project MyProject.
-
-    <DefaultValueBehavior HansoftProject="MyProject" View="Backlog">
-      <Name DefaultValue="As a (role) I want to (something) so I can (benefit)" />
-    </DefaultValueBehavior>
-
-
-    Number Behavior
-    ===============
-    This behavior is useful if you want to have a ranking number in the product backlog hierarchy in Hansoft. The number is
-    kept in a selectable Hansoft column (of type text). When the column is added to your Hansoft project it should be set
-    to a readonly column so it isn't advertently changed.
-
-    The numbering is updated automatically as items in the product backlog hierarchy are moved/added/deleted.
-    
-    Parameters
-    ''''''''''
-    HansoftProject            Name of the Hansoft project
-    View                      Specifies the View to which the numbering should be applied (Agile, Scheduled, Backlog)
-    NumberingStyle            Hierarchical numbering mean to e.g. to denote the second child of the first parent as 1.2, the default is Flat
-                              numbering, i.e. to number each set of siblings 1, 2, 3 and so on. Hence the supported values are "Hierarchical" or "Flat".
-    ColumnName                Specifies the Hansoft column to keep the numbering, this should be a readonly custom column of type Text
-    LabelLevels               Only specified levels in the hierarchy will be labeled. Levels are counted from the top staring with 1.
-                              Specifying this setting is exclusive with specifying the IgnoreLevels setting.
-    IgnoreLevels              Specified levels will not be labeled.  Levels are counted from the top staring with 1.
-                              Specifying this setting is exclusive with specifying the LabelLevels setting.
-
-    Example
-    '''''''
-    Add hierarchical numbering to the custom column Rank (of type text) in the product backlog of the project MyProject. 
-    
-    <NumberBehavior HansoftProject="MyProject" View="Backlog" ColumnName="Rank" NumberingStyle="Hierarchical" LabelLevels="" IgnoreLevels="" />
-
-
-    Trigger Behavior
-    ===============
-    This behavior is useful if you want to perform arithmetics expressions on item colums when things change. It can only affect the data in the 
-    changed column, so it's currently not possible to change one items column value based of a change in another item.
-    It's based on conditional statements that triggers a sequence of behaviors when true.
-    
-    Parameters
-    ''''''''''
-    HansoftProject      : A regular expression (see: http://msdn.microsoft.com/en-us/library/az24scfc(v=vs.110).aspx) specifying the Hansoft
-                          projects for which the behavior should be applied.
-    InvertedMatch       : If not specified, or if the value is any other than 'Yes', then the behavior will be applied for all projects
-                          that match the regular expression specified with the HansoftProject parameter. If the value is 'Yes', then the
-                          behavior will be applied for all projects except the ones that match the regular expression specified with the
-                          HansoftProject parameter
-    View                : Specifies the View in which the items are found (Agile, Scheduled, Bugs, Backlog)
-    Condtion            : An conditional expression that evaluates to a bool. If triggered the statements (that should be separated by new lines)
-                          will be executed.  
-                          
-    Syntax:
-    ''''''''''
-     Column syntax: $COLUMNNAME (case sensitive)
-     String syntax: 'String'
-     Constants: TIMENOW
-     Operators: +,-,/,*,<,<=,>,>=,!=,==
-     Paranthesis to encapsulate expressions
-     List syntax: [item1,item2,item3]
-
-    Example
-    '''''''
-    Add hierarchical numbering to the custom column Rank (of type text) in the product backlog of the project MyProject. 
-    
-       <TriggerBehavior HansoftProject="Test Cases" View="Backlog">
-           <Condition Expression="$WorkflowStatus == 'Test Passed'">
-             $Last Run = TIMENOW
-             $Latest Pass = TIMENOW
-             $Times Run = $Times Run + 1
-             $Times Passed = $Times Passed + 1
-           </Condition>
-           <Condition Expression="$WorkflowStatus == 'Test Failed'">
-             $Last Run = TIMENOW
-             $Times Run = $Times Run + 1
-           </Condition>
-           <Condition Expression="$Times Run > 5">
-             $Test steps = $Test steps + 'Number of times run: '+ $Times Run +'\n'
-           </Condition>
-         </TriggerBehavior>  
-    
-    
-    Shadow Backlog Behavior
-    =======================
-    This is a highly specialized behavior to replicate the product backlog of one project (source project) to the product backlog of another
-    project (shadow project). The replicated backlog will always synchronize with the source backlog, hence it is not possible to delete, add,
-    or move items in the shadow backlog. If you make such changes they will immediately be reverted to the state of the backlog in the source project.
-    
-    Parameters
-    ''''''''''    
-    SourceProject            Name of the Hansoft project for which the backlog should be replicated.
-    ShadowProject            Name of the Hansoft project that will have its product backlog synchronized with the product backlog of the source project.
-    SourceDataBaseIDColumn   The name of a custom column in the product backlog of the shadow project. The column should be of type text and set to be
-                             readonly. The column will be used to track the Database ID of the corresponding item in the source project.
-    
-    For each column that should be replicated you then specify one child element. The child elements can either be of type CustomColumn where the name of
-    the column is specified with the Name attribute, or one of the following to indicate one of the builtin columns in Hansoft:
-    * Risk
-    * Priority
-    * EstimatedDays
-    * Category
-    * Points
-    * Status
-    * Confidence
-    * Hyperlink
-    * Name
-    * WorkRemaining
-    
-    Example
-    '''''''
-    Replicate the backlog from the Hansoft project "My project" to the backlog of the Hansoft project "My shadow". Only the specified columns will be
-    replicated. The column "Source ID" must exist in the product backlog of the shadow project to track the database ID of the corresponding item in
-    the source project.
-
-    <ShadowBacklogBehavior SourceProject="My project" ShadowProject="My shadow" SourceDataBaseIDColumn="Source ID">
-      <Name/>
-      <Status/>
-      <Priority/>
-      <EstimatedDays/>
-    </ShadowBacklogBehavior>
-
-    Intermediate Rank Behavior
-    ==========================
-    This is a highly specialized behavior that allows you have a column with a number that defines a strict order of items (in addition to the order
-    defined by the hierarchy or the priority views). To change the order of the items you manually enter an intermediate number for an item in 
-    the Hansoft client to define its position. Items will then me renumbered to be a sequence of whole numbers starting with 1. For Example, if 
-    you have the following values for a set of items in Hansoft
-    ItemA   1
-    ItemB   2
-    ItemC   3
-    
-    and then for ItemC enter the number 0, then the items will be renumbered to be:
-    ItemA   2
-    ItemB   3
-    ItemC   1
-    
-    Parameters
-    ''''''''''
-    HansoftProject            Name of the Hansoft project
-    View                      Specifies the View to which the numbering should be applied (Agile, Scheduled, Backlog)
-    ColumnName                Specifies the Hansoft column to keep the numbering, this should be a writable custom column of type Text
-    Find                      A Find query that specifies the items for which the numbering is applicable.
-    
-    Example
-    '''''''
-    In the product backlog for the Hansoft project "My project" use the column with the name "Prio2" to keep an intermediate ranking number. The
-    ranking is applicable for all direct children of the item with the name "Features".
-    
-    <IntermediateRankBehavior HansoftProject="My project" View="Backlog" ColumnName="Prio2" Find="Immediateparentsubproject:Item(Features)"/>
-    
-    Clone Project Behavior
-    ======================
-    This project should be used together with a Hansoft client plugin called: https://github.com/Hansoft/HansoftCloneProjectClientPlugin. See
-    the documentation of the plugin for more information.
-    
-    Example
-    '''''''
-    Activate the behavior for the current database.
+    <!-- To support instantiations of new projects (programs) from a template project  -->
     <CloneProjectBehavior />
--->
+
+
+    <!-- ******************************** -->
+    <!-- Customizations for the Portfolio -->
+    <!-- ******************************** -->
+    <!-- This behavior is applied for all leaf backlog items in the backlog of all projects with a name that starts
+         with the text 'Portfolio', i.e., the SAFe portfolio project. The behavior will:
+           - Update the Feature summary field on epics to reflect changes to linked features
+           - Automatically set the Theme column to the name of the parent item
+           - Calculate WSJF, (User value+Time criticality+Risk reduction and opportunity enablement)/Job size. -->
+    <DeriveBehavior HansoftProject="^Portfolio" View="Backlog" Find="Itemtype=&quot;Backlog item&quot;">
+      <CustomColumn Name="Feature summary" Expression="SE.HansoftExtensions.SAFeExtension.FeatureSummary(current_task, true, &quot;Points completed&quot;)" />
+      <CustomColumn Name="Theme" Expression="current_task.Parent.Name" />
+      <!--<CustomColumn Name="WSJF" Expression="current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt() == 0 ? 0 : (current_task.GetCustomColumnValue(&quot;User value&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Time criticality&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Risk reduction and opportunity enablement&quot;).ToInt()) / current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt()" />-->
+    </DeriveBehavior>
+
+
+    <!-- *************************** -->
+    <!-- Customizations for Programs -->
+    <!-- *************************** -->
+    <!-- The following behaviors are applied for all projects where the project name start with the
+         text 'Program', i.e. these projects are considered SAFe programs. -->
+
+    <!-- This behavior is applied for all backlog items in the program backlog that have children. It will:
+         - Calculeate WSJF -->
+    <!-- To add more projects use cherry-picking to avoid column missing exceptions: "^Program\s-\s(SBO\b|Bangalore\b)$" -->
+    <DeriveBehavior HansoftProject="^Program\s-\sSBO$" View="Backlog" Find="Itemtype=&quot;Backlog item&quot;">
+      <CustomColumn Name="WSJF" Expression="current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt() == 0 ? 0 : Math.Round((decimal)(current_task.GetCustomColumnValue(&quot;User value&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Time criticality&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Risk reduction and opportunity enablement&quot;).ToInt()) / current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt(), 2)" />
+    </DeriveBehavior>
+
+    <!-- This behavior is applied for Release items (milestones) in the schedule that are placed in a container named "Features". For these releases all backlog items that are tagged
+         to the release will get the "Release Risk" column set. -->
+    <!--<AssignReleaseRiskBehavior HansoftProject="^Program\s-\sSBO$" TrackingColumn="Release risk" RiskValues="Done, Low risk, Medium risk, High risk" Find="Itemtype=Release AND Immediateparentsubproject:Item(Features)" PointsOrDays="Points" LowRiskLimit="80" HighRiskLimit="120" ElevateBlockedItems="Yes" ConsiderRiskColumn="No" />-->
+
+    <!-- This behavior will track the time when the status field was last changed on items in the product backlog -->
+    <!--<TrackLastStatusChangeBehavior HansoftProject="^Program\s-\sSBO$" View="Backlog" TrackingColumn="Status last changed" TrackedColumn="Aggregated status"/>-->
+
+    <!-- This behavior will colorize the items in the boardview based on type value defined in TypeColors.xml -->
+    <TypeColorBehavior HansoftProject="^Program\s-\sSBO$" View="Backlog" />
+
+    <!-- For each feature (Backlog item) in Program Backlog, derives column data from any linked
+         milestones (release) and/or stories in team projects. -->
+    <DeriveBehavior HansoftProject="^Program\s-\sSBO$" View="Backlog" Find="Itemtype=&quot;Backlog item&quot;"> 
+      <Status                                    Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.AggregatedStatus(current_task)" />
+      <IsCompleted                               Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.IsCompleted(current_task)" />
+      <Points                                    Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.PointsNotCompleted(current_task)" />
+      <CustomColumn Name="Points completed"      Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.PointsCompleted(current_task)" />
+      <CustomColumn Name="Points in progress"    Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.PointsInProgress(current_task)" />
+      <CustomColumn Name="Points not done"       Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.PointsNotDone(current_task)" />
+      <CustomColumn Name="Points blocked"        Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.PointsBlocked(current_task)" />
+      <CustomColumn Name="Points count"          Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.PointsCount(current_task)" />
+      <CustomColumn Name="Team"                  Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.Team(current_task)" />
+      <CustomColumn Name="Items completed"       Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.ItemsCompleted(current_task)" />
+      <CustomColumn Name="Items in progress"     Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.ItemsInProgress(current_task)" />
+      <CustomColumn Name="Items not done"        Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.ItemsNotDone(current_task)" />
+      <CustomColumn Name="Items blocked"         Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.ItemsBlocked(current_task)" />
+      <CustomColumn Name="Items count"           Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.ItemsCount(current_task)" />
+      <CustomColumn Name="Feature summary"       Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.FeatureSummary(current_task)" />
+      <CustomColumn Name="Internal dependencies" Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.InternalDependencies(current_task)" />
+      <CustomColumn Name="External dependencies" Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.ExternalDependencies(current_task)" />
+    </DeriveBehavior>
+
+
+    <!-- *********************************************** -->
+    <!-- Customizations for all teams excluding HW teams -->
+    <!-- *********************************************** -->
+    <!-- Update all milestones that have team dependencies. -->
+    <DeriveBehavior HansoftProject="^Team\s-\s[a-zA-Z\s]+(?!\(HW\))$" View="Scheduled" Find="Itemtype=&quot;Release&quot;">
+      <CustomColumn Name="Consumers" Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.Consumers(current_task)" />
+    </DeriveBehavior>
+
+    <!-- This behavior will colorize the items in the boardview based on type value defined in TypeColors.xml -->
+    <TypeColorBehavior HansoftProject="^Team\s-\s[a-zA-Z\s]+(?!\(HW\))$" View="Backlog" />
+
+
+    <!-- *************************** -->
+    <!-- Customizations for Projects -->
+    <!-- *************************** -->
+    <!-- The following behaviors are applied for all projects where the project name start with the
+         text 'Project', i.e. these projects are considered traditional (non-agile) projects. -->
+
+    <!-- This behavior is applied for all scheduled tasks in a traditional project.
+         For a scheduled task which is linked to a milestone (release), it will, :
+         - set the tasks Finish date to the date of the milestone.
+         - set the tasks Status to an aggregated value for the backlog items which is part of the milestone.
+         - set the tasks Task completed (%) to the percent of points completed for the backlog items which is part of the milestone. -->
+    <DeriveBehavior HansoftProject="^Project\s-\s" View="Scheduled" Find="Itemtype=&quot;Scheduled task&quot;">
+      <Status                                 Expression="SE.HansoftExtensions.ProjectTaskFromMilestone.Update(current_task)" />
+      <Points                                 Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.PointsNotCompleted(current_task)" />
+      <CustomColumn Name="Points completed"   Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.PointsCompleted(current_task)" />
+      <CustomColumn Name="Points in progress" Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.PointsInProgress(current_task)" />
+      <CustomColumn Name="Points not done"    Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.PointsNotDone(current_task)" />
+      <CustomColumn Name="Points blocked"     Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.PointsBlocked(current_task)" />
+    </DeriveBehavior>
+
+    <!-- For MP-x project calculate feature summary -->
+    <DeriveBehavior HansoftProject="^Project\s-\sMP-x$" View="Backlog" Find="Itemtype=&quot;Backlog item&quot;">
+      <CustomColumn Name="Feature summary"    Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.FeatureSummary(current_task)" />
+    </DeriveBehavior>
+
+    <!-- This behavior is applied for all backlog items in the project backlog. It will:
+         - Calculeate WSJF -->
+    <!-- To add more projects use cherry-picking to avoid column missing exceptions: "^Project\s-\s(MPC\b|Other\b)$" -->
+    <DeriveBehavior HansoftProject="^Project\s-\sMPC$" View="Backlog" Find="">
+      <CustomColumn Name="WSJF" Expression="current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt() == 0 ? 0 : Math.Round((decimal)(current_task.GetCustomColumnValue(&quot;User value&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Time criticality&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Risk reduction and opportunity enablement&quot;).ToInt()) / current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt(), 2)" />
+    </DeriveBehavior>
+
+
+    <!-- *************************** -->
+    <!-- Customizations for HW teams -->
+    <!-- *************************** -->
+    <DeriveBehavior HansoftProject="^Team\s-\s[a-zA-Z\s]+\s\(HW\)$" View="Scheduled" Find="Itemtype=&quot;Scheduled task&quot;">
+      <Status Expression="SE.HansoftExtensions.ProjectTaskFromMilestone.Update(current_task)" />
+    </DeriveBehavior>
+    <DeriveBehavior HansoftProject="^Team\s-\s(C1\b|NGAS\b)\s\(HW\)$" View="Scheduled" Find="Itemtype=&quot;Scheduled task&quot;">
+      <CustomColumn Name="Remaining work" Expression="Math.Round((decimal)(100 - current_task.PercentComplete) * (int)current_task.GetDefaultColumnValue(EHPMProjectDefaultColumn.BudgetedWork) / 100, 0)" />
+      <CustomColumn Name="Completed work" Expression="Math.Round((decimal)current_task.PercentComplete * (int)current_task.GetDefaultColumnValue(EHPMProjectDefaultColumn.BudgetedWork) / 100, 0)" />
+    </DeriveBehavior>
+
+
   </Behaviors>
 </Configuration>
-

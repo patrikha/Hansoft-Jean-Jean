@@ -99,8 +99,13 @@
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="JeanConnection.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="JeanSettings.xml">
       <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +120,9 @@
     <ProjectReference Include="..\Hansoft-SimpleLogging\SimpleLogging.csproj">
       <Project>{1a62067e-bd06-47c4-85f8-f4106699838a}</Project>
       <Name>SimpleLogging</Name>
+    <ProjectReference Include="..\Hansoft-Jean-TypeColorBehavior\TypeColorBehavior.csproj">
+      <Project>{07e67861-6c09-4fc9-bd6b-5d1f418db356}</Project>
+      <Name>TypeColorBehavior</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

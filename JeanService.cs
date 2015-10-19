@@ -48,6 +48,7 @@ namespace Hansoft.Jean
             {
                 loadingError = false;
                 startupError = true;
+                LoadConnectionSettings();
                 LoadSettings();
                 callbackSemaphore = new Semaphore(0, 1);
                 startSemaphore = new Semaphore(0, 1);
@@ -76,17 +77,22 @@ namespace Hansoft.Jean
         {
             foreach (AbstractBehavior b in behaviors)
             {
-                try
-                {
-                    b.Initialize(callbackHandler.BufferEvents, extensionAssemblies, logger);
-                }
-                catch (Exception e)
-                {
-                    logger.Exception("Error when initializing behavior " + b.Title + ". The behavior will not be applied.", e);
-                }
+                InitializeBehavior(b);
             }
         }
 
+        public void InitializeBehavior(AbstractBehavior b)
+        {
+            try
+            {
+                b.Initialize(callbackHandler.BufferEvents, extensionAssemblies, logger);
+            }
+            catch (Exception e)
+            {
+                logger.Exception("Error when initializing behavior " + b.Title + ". The behavior will not be applied.", e);
+            }
+        }
+        
         public void Start()
         {
             if (!loadingError)
@@ -112,7 +118,7 @@ namespace Hansoft.Jean
                             callbackHandler.TaskDelete += new System.EventHandler<TaskDeleteEventArgs>(b.OnTaskDelete);
                             callbackHandler.BeginProcessBufferedEvents += new System.EventHandler<EventArgs>(b.OnBeginProcessBufferedEvents);
                             callbackHandler.EndProcessBufferedEvents += new System.EventHandler<EventArgs>(b.OnEndProcessBufferedEvents);
-                            InitializeBehaviors();
+                            InitializeBehavior(b);
                         }
 
                         startSemaphore.Release();
@@ -180,6 +186,29 @@ namespace Hansoft.Jean
             }
         }
 
+        void LoadConnectionSettings()
+        {
+            string currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            FileInfo fInfo = new FileInfo(Path.Combine(currentDirectory, "JeanConnection.xml"));
+            if (fInfo.Exists)
+            {
+                XmlDocument xmlDocument = new XmlDocument();
+                xmlDocument.Load(fInfo.FullName);
+                XmlElement el = xmlDocument.DocumentElement;
+                if (el.Name != "Connection")
+                    throw new FormatException("The root element of the connection file must be of type Connection, got " + el.Name);
+
+                server = el.GetAttribute("HansoftServerHost");
+                portNumber = Int32.Parse(el.GetAttribute("HansoftServerPort"));
+                databaseName = el.GetAttribute("HansoftDatabase");
+                sdkUser = el.GetAttribute("HansoftSdkUser");
+                sdkUserPwd = el.GetAttribute("HansoftSdkUserPassword");
+                eventWindow = Int32.Parse(el.GetAttribute("EventWindow"));
+            }
+            else
+                throw new ArgumentException("Could not find connection file JeanConnection.xml");
+        }
+
         void LoadSettings()
         {
             string currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -201,14 +230,6 @@ namespace Hansoft.Jean
                         XmlElement el = (XmlElement)node;
                         switch (el.Name)
                         {
-                            case ("Connection"):
-                                server = el.GetAttribute("HansoftServerHost");
-                                portNumber = Int32.Parse(el.GetAttribute("HansoftServerPort"));
-                                databaseName = el.GetAttribute("HansoftDatabase");
-                                sdkUser = el.GetAttribute("HansoftSdkUser");
-                                sdkUserPwd = el.GetAttribute("HansoftSdkUserPassword");
-                                eventWindow = Int32.Parse(el.GetAttribute("EventWindow"));
-                                break;
                             case ("Behaviors"):
                                 behaviors = new List<AbstractBehavior>();
                                 foreach (XmlNode bNode in el.ChildNodes)
@@ -242,7 +263,7 @@ namespace Hansoft.Jean
                                 }
                                 break;
                             default:
-                                throw new FormatException("Error in configuration file JeanSettings.xml. Expected element of type Connection, Behaviors, or LoadAssemblies, got " + el.Name);
+                                throw new FormatException("Error in configuration file JeanSettings.xml. Expected element of type Behaviors, or LoadAssemblies, got " + el.Name);
                         }
                     }
                 }
