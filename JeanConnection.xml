@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Connection HansoftServerHost="localhost" HansoftServerPort="50256" HansoftDatabase="DEMO" HansoftSdkUser="Jean" HansoftSdkUserPassword="Jean" EventWindow="500"/>

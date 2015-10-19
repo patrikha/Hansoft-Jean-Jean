@@ -48,7 +48,7 @@
     <DeriveBehavior HansoftProject="^Portfolio" View="Backlog" Find="Itemtype=&quot;Backlog item&quot;">
       <CustomColumn Name="Feature summary" Expression="SE.HansoftExtensions.SAFeExtension.FeatureSummary(current_task, true, &quot;Points completed&quot;)" />
       <CustomColumn Name="Theme" Expression="current_task.Parent.Name" />
-      <!--<CustomColumn Name="WSJF" Expression="current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt() == 0 ? 0 : (current_task.GetCustomColumnValue(&quot;User value&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Time criticality&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Risk reduction and opportunity enablement&quot;).ToInt()) / current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt()" />-->
+      <CustomColumn Name="WSJF" Expression="current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt() == 0 ? 0 : (current_task.GetCustomColumnValue(&quot;User value&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Time criticality&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Risk reduction and opportunity enablement&quot;).ToInt()) / current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt()" />
     </DeriveBehavior>
 
 
@@ -61,7 +61,7 @@
     <!-- This behavior is applied for all backlog items in the program backlog that have children. It will:
          - Calculeate WSJF -->
     <!-- To add more projects use cherry-picking to avoid column missing exceptions: "^Program\s-\s(SBO\b|Bangalore\b)$" -->
-    <DeriveBehavior HansoftProject="^Program\s-\sSBO$" View="Backlog" Find="Itemtype=&quot;Backlog item&quot;">
+    <DeriveBehavior HansoftProject="^Program\s-\sMarvel$" View="Backlog" Find="Itemtype=&quot;Backlog item&quot;">
       <CustomColumn Name="WSJF" Expression="current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt() == 0 ? 0 : Math.Round((decimal)(current_task.GetCustomColumnValue(&quot;User value&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Time criticality&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Risk reduction and opportunity enablement&quot;).ToInt()) / current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt(), 2)" />
     </DeriveBehavior>
 
@@ -70,14 +70,14 @@
     <!--<AssignReleaseRiskBehavior HansoftProject="^Program\s-\sSBO$" TrackingColumn="Release risk" RiskValues="Done, Low risk, Medium risk, High risk" Find="Itemtype=Release AND Immediateparentsubproject:Item(Features)" PointsOrDays="Points" LowRiskLimit="80" HighRiskLimit="120" ElevateBlockedItems="Yes" ConsiderRiskColumn="No" />-->
 
     <!-- This behavior will track the time when the status field was last changed on items in the product backlog -->
-    <!--<TrackLastStatusChangeBehavior HansoftProject="^Program\s-\sSBO$" View="Backlog" TrackingColumn="Status last changed" TrackedColumn="Aggregated status"/>-->
+    <TrackLastStatusChangeBehavior HansoftProject="^Program\s-\sMarvel$" View="Backlog" TrackingColumn="Status last changed" TrackedColumn="Aggregated status"/>
 
     <!-- This behavior will colorize the items in the boardview based on type value defined in TypeColors.xml -->
-    <TypeColorBehavior HansoftProject="^Program\s-\sSBO$" View="Backlog" />
+    <TypeColorBehavior HansoftProject="^Program\s-\sMarvel$" View="Backlog" />
 
     <!-- For each feature (Backlog item) in Program Backlog, derives column data from any linked
          milestones (release) and/or stories in team projects. -->
-    <DeriveBehavior HansoftProject="^Program\s-\sSBO$" View="Backlog" Find="Itemtype=&quot;Backlog item&quot;"> 
+    <DeriveBehavior HansoftProject="^Program\s-\sMarvel$" View="Backlog" Find="Itemtype=&quot;Backlog item&quot;">
       <Status                                    Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.AggregatedStatus(current_task)" />
       <IsCompleted                               Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.IsCompleted(current_task)" />
       <Points                                    Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.PointsNotCompleted(current_task)" />
@@ -130,18 +130,6 @@
       <CustomColumn Name="Points blocked"     Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.PointsBlocked(current_task)" />
     </DeriveBehavior>
 
-    <!-- For MP-x project calculate feature summary -->
-    <DeriveBehavior HansoftProject="^Project\s-\sMP-x$" View="Backlog" Find="Itemtype=&quot;Backlog item&quot;">
-      <CustomColumn Name="Feature summary"    Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.FeatureSummary(current_task)" />
-    </DeriveBehavior>
-
-    <!-- This behavior is applied for all backlog items in the project backlog. It will:
-         - Calculeate WSJF -->
-    <!-- To add more projects use cherry-picking to avoid column missing exceptions: "^Project\s-\s(MPC\b|Other\b)$" -->
-    <DeriveBehavior HansoftProject="^Project\s-\sMPC$" View="Backlog" Find="">
-      <CustomColumn Name="WSJF" Expression="current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt() == 0 ? 0 : Math.Round((decimal)(current_task.GetCustomColumnValue(&quot;User value&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Time criticality&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Risk reduction and opportunity enablement&quot;).ToInt()) / current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt(), 2)" />
-    </DeriveBehavior>
-
 
     <!-- *************************** -->
     <!-- Customizations for HW teams -->
@@ -149,7 +137,7 @@
     <DeriveBehavior HansoftProject="^Team\s-\s[a-zA-Z\s]+\s\(HW\)$" View="Scheduled" Find="Itemtype=&quot;Scheduled task&quot;">
       <Status Expression="SE.HansoftExtensions.ProjectTaskFromMilestone.Update(current_task)" />
     </DeriveBehavior>
-    <DeriveBehavior HansoftProject="^Team\s-\s(C1\b|NGAS\b)\s\(HW\)$" View="Scheduled" Find="Itemtype=&quot;Scheduled task&quot;">
+    <DeriveBehavior HansoftProject="^Team\s-\s(Mutants\b)\s\(HW\)$" View="Scheduled" Find="Itemtype=&quot;Scheduled task&quot;">
       <CustomColumn Name="Remaining work" Expression="Math.Round((decimal)(100 - current_task.PercentComplete) * (int)current_task.GetDefaultColumnValue(EHPMProjectDefaultColumn.BudgetedWork) / 100, 0)" />
       <CustomColumn Name="Completed work" Expression="Math.Round((decimal)current_task.PercentComplete * (int)current_task.GetDefaultColumnValue(EHPMProjectDefaultColumn.BudgetedWork) / 100, 0)" />
     </DeriveBehavior>
