@@ -80,7 +80,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Topshelf">
-      <HintPath>..\packages\TopShelf.3.1.1\lib\net-4.0-full\Topshelf.dll</HintPath>
+      <HintPath>.\Topshelf.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -109,9 +109,21 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Hansoft-Jean-AggregateMilestoneBehavior\AggregateMilestoneBehavior.csproj">
+      <Project>{0716ff40-ca0d-4dd8-b8b1-0a9bdc07846d}</Project>
+      <Name>AggregateMilestoneBehavior</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Hansoft-Jean-Behavior\Behavior.csproj">
       <Project>{1834f078-2f41-483e-8007-530a0b934df3}</Project>
       <Name>Behavior</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Hansoft-Jean-DependencyBehavior\DependencyBehavior.csproj">
+      <Project>{b038d6c5-6a8a-420c-85dd-3b5e078e4a22}</Project>
+      <Name>DependencyBehavior</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Hansoft-Jean-DeriveBehavior\DeriveBehavior.csproj">
+      <Project>{1cce23bb-b71c-4b9c-ad4e-6e27056da1d0}</Project>
+      <Name>DeriveBehavior</Name>
     </ProjectReference>
     <ProjectReference Include="..\Hansoft-ObjectWrapper\ObjectWrapper.csproj">
       <Project>{c7143133-6ff7-4212-9eed-91b0bde6bf5b}</Project>
@@ -120,9 +132,14 @@
     <ProjectReference Include="..\Hansoft-SimpleLogging\SimpleLogging.csproj">
       <Project>{1a62067e-bd06-47c4-85f8-f4106699838a}</Project>
       <Name>SimpleLogging</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Hansoft-Jean-TypeColorBehavior\TypeColorBehavior.csproj">
       <Project>{07e67861-6c09-4fc9-bd6b-5d1f418db356}</Project>
       <Name>TypeColorBehavior</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\HansoftSAFeExtension\SAFeExtension.csproj">
+      <Project>{4ae3b14c-d431-4fa5-a3e4-9eb8917ac386}</Project>
+      <Name>SAFeExtension</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -148,7 +165,7 @@
 copy /Y $(TargtedDir)$(TargetFileName)    $(ProjectDir)..\Runnable
 </PostBuildEvent>
   </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
