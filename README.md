@@ -3,7 +3,7 @@ Jean for Hansoft
 
 Important note
 --------------
-Please see [MORE.md](https://github.com/patrikha/Hansoft-Jean-Jean/blob/master/MORE.md) for Scheider Electric customizations.
+Please see [MORE.md](https://github.com/patrikha/Hansoft-Jean-Jean/blob/master/MORE.md) for Schneider Electric customizations.
 
 Overview
 --------
