@@ -10,18 +10,11 @@
   examples NumberBehavior, CopyBehavior, DeriveBehavior, and DefaultValueBehavior.
    -->
   <LoadAssemblies>
-    <Assembly Path="NumberBehavior.dll" />
-    <Assembly Path="CopyBehavior.dll" />
+    <Assembly Path="DependencyBehavior.dll" />
     <Assembly Path="DeriveBehavior.dll" />
-    <Assembly Path="DefaultValueBehavior.dll" />
-    <Assembly Path="TrackLastStatusChangeBehavior.dll" />
-    <Assembly Path="AssignReleaseRiskBehavior.dll" />
-    <Assembly Path="ShadowBacklogBehavior.dll" />
-    <Assembly Path="IntermediateRankBehavior.dll" />
-    <Assembly Path="CloneProjectBehavior.dll" />
     <Assembly Path="SAFeExtension.dll" />
     <Assembly Path="TypeColorBehavior.dll" />
-    <Assembly Path="DerivedColumnExpressionExample.dll" />
+    <Assembly Path="AggregateMilestoneBehavior.dll" />
   </LoadAssemblies>
 
   <!-- NOTE:
@@ -32,10 +25,6 @@
        standard JeanSettings.xml file for Jean. See: http://github.com/Hansoft/Hansoft-Jean-Jean -->
 
   <Behaviors>
-
-    <!-- To support instantiations of new projects (programs) from a template project  -->
-    <CloneProjectBehavior />
-
 
     <!-- ******************************** -->
     <!-- Customizations for the Portfolio -->
@@ -65,15 +54,14 @@
       <CustomColumn Name="WSJF" Expression="current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt() == 0 ? 0 : Math.Round((decimal)(current_task.GetCustomColumnValue(&quot;User value&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Time criticality&quot;).ToInt() + current_task.GetCustomColumnValue(&quot;Risk reduction and opportunity enablement&quot;).ToInt()) / current_task.GetCustomColumnValue(&quot;Job size&quot;).ToInt(), 2)" />
     </DeriveBehavior>
 
-    <!-- This behavior is applied for Release items (milestones) in the schedule that are placed in a container named "Features". For these releases all backlog items that are tagged
-         to the release will get the "Release Risk" column set. -->
-    <!--<AssignReleaseRiskBehavior HansoftProject="^Program\s-\sSBO$" TrackingColumn="Release risk" RiskValues="Done, Low risk, Medium risk, High risk" Find="Itemtype=Release AND Immediateparentsubproject:Item(Features)" PointsOrDays="Points" LowRiskLimit="80" HighRiskLimit="120" ElevateBlockedItems="Yes" ConsiderRiskColumn="No" />-->
-
-    <!-- This behavior will track the time when the status field was last changed on items in the product backlog -->
-    <TrackLastStatusChangeBehavior HansoftProject="^Program\s-\sMarvel$" View="Backlog" TrackingColumn="Status last changed" TrackedColumn="Aggregated status"/>
-
     <!-- This behavior will colorize the items in the boardview based on type value defined in TypeColors.xml -->
     <TypeColorBehavior HansoftProject="^Program\s-\sMarvel$" View="Backlog" />
+
+    <!-- This behavior will find all tagged features and from the linked team milestones aggregate the max milestone date to reflect latest finish date -->
+    <AggregateMilestoneBehavior HansoftProject="^Program\s-\sMarvel$" View="Scheduled" Find="Itemtype=&quot;Release&quot; AND Itemname:&quot;MP-x&quot;" />
+
+    <!-- This behavior will find all internal and external dependencies and and populate the dependency columns -->
+    <DependencyBehavior HansoftProject="^Program\s-\sMarvel$" />
 
     <!-- For each feature (Backlog item) in Program Backlog, derives column data from any linked
          milestones (release) and/or stories in team projects. -->
@@ -93,8 +81,6 @@
       <CustomColumn Name="Items blocked"         Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.ItemsBlocked(current_task)" />
       <CustomColumn Name="Items count"           Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.ItemsCount(current_task)" />
       <CustomColumn Name="Feature summary"       Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.FeatureSummary(current_task)" />
-      <CustomColumn Name="Internal dependencies" Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.InternalDependencies(current_task)" />
-      <CustomColumn Name="External dependencies" Expression="SE.HansoftExtensions.TeamStories2ProgramFeatureAggregation.ExternalDependencies(current_task)" />
     </DeriveBehavior>
 
 
