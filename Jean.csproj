@@ -28,7 +28,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -36,15 +36,17 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -67,8 +69,8 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HPMSdkManaged_4_5.x86">
-      <HintPath>..\HansoftSDK\Win32\HPMSdkManaged_4_5.x86.dll</HintPath>
+    <Reference Include="HPMSdkManaged_4_5.x64">
+      <HintPath>..\HansoftSettings\HansoftSDK\Win32\HPMSdkManaged_4_5.x64.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -79,8 +81,8 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Topshelf">
-      <HintPath>.\Topshelf.dll</HintPath>
+    <Reference Include="Topshelf, Version=3.1.107.0, Culture=neutral, PublicKeyToken=b800c4cfcdeea87b, processorArchitecture=MSIL">
+      <HintPath>..\HansoftSettings\Jean\packages\Topshelf.3.1.1\lib\net40-full\Topshelf.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -117,10 +119,6 @@
       <Project>{1834f078-2f41-483e-8007-530a0b934df3}</Project>
       <Name>Behavior</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Hansoft-Jean-DependencyBehavior\DependencyBehavior.csproj">
-      <Project>{b038d6c5-6a8a-420c-85dd-3b5e078e4a22}</Project>
-      <Name>DependencyBehavior</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Hansoft-Jean-DeriveBehavior\DeriveBehavior.csproj">
       <Project>{1cce23bb-b71c-4b9c-ad4e-6e27056da1d0}</Project>
       <Name>DeriveBehavior</Name>
@@ -129,13 +127,13 @@
       <Project>{c7143133-6ff7-4212-9eed-91b0bde6bf5b}</Project>
       <Name>ObjectWrapper</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Hansoft-SimpleLogging\SimpleLogging.csproj">
-      <Project>{1a62067e-bd06-47c4-85f8-f4106699838a}</Project>
-      <Name>SimpleLogging</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Hansoft-Jean-TypeColorBehavior\TypeColorBehavior.csproj">
       <Project>{07e67861-6c09-4fc9-bd6b-5d1f418db356}</Project>
       <Name>TypeColorBehavior</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Hansoft-SimpleLogging\SimpleLogging.csproj">
+      <Project>{1a62067e-bd06-47c4-85f8-f4106699838a}</Project>
+      <Name>SimpleLogging</Name>
     </ProjectReference>
     <ProjectReference Include="..\HansoftSAFeExtension\SAFeExtension.csproj">
       <Project>{4ae3b14c-d431-4fa5-a3e4-9eb8917ac386}</Project>
